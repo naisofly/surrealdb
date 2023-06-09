@@ -317,7 +317,7 @@ fn duration_raw(i: &str) -> IResult<&str, Duration> {
 		_ => unreachable!("shouldn't have parsed {u} as duration unit"),
 	};
 
-	std_duration.map(|d| (i, Duration(d))).ok_or(nom::Err::Error(crate::sql::Error::Parser(i)))
+	std_duration.map(|d| (i, Duration(d))).ok_or(nom::combinator::fail(i))
 }
 
 fn part(i: &str) -> IResult<&str, u64> {

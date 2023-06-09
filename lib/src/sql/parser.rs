@@ -1,4 +1,5 @@
 use crate::err::Error;
+use crate::sql::error::convert_error;
 use crate::sql::error::Error::{Field, Group, Order, Parser, Split};
 use crate::sql::error::IResult;
 use crate::sql::query::{query, Query};
@@ -46,16 +47,9 @@ fn parse_impl<O>(input: &str, parser: impl Fn(&str) -> IResult<&str, O>) -> Resu
 			// There was an error when parsing the query
 			Err(Err::Error(e)) | Err(Err::Failure(e)) => Err(match e {
 				// There was a parsing error
-				Parser(e) => {
-					// Locate the parser position
-					let (s, l, c) = locate(input, e);
-					// Return the parser error
-					Error::InvalidQuery {
-						line: l,
-						char: c,
-						sql: s.to_string(),
-					}
-				}
+				Parser(e) => Error::InvalidQuery {
+					message: convert_error(input, e),
+				},
 				// There was a SPLIT ON error
 				Field(e, f) => Error::InvalidField {
 					line: locate(input, e).1,

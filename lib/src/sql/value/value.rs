@@ -15,6 +15,7 @@ use crate::sql::constant::{constant, Constant};
 use crate::sql::datetime::{datetime, Datetime};
 use crate::sql::duration::{duration, Duration};
 use crate::sql::edges::{edges, Edges};
+use crate::sql::error;
 use crate::sql::error::IResult;
 use crate::sql::expression::{expression, Expression};
 use crate::sql::fmt::{Fmt, Pretty};
@@ -50,6 +51,7 @@ use nom::branch::alt;
 use nom::bytes::complete::tag_no_case;
 use nom::character::complete::char;
 use nom::combinator::{map, opt};
+use nom::error::context;
 use nom::multi::separated_list0;
 use nom::multi::separated_list1;
 use once_cell::sync::Lazy;
@@ -2630,79 +2632,85 @@ impl TryPow for Value {
 
 /// Parse any `Value` including binary expressions
 pub fn value(i: &str) -> IResult<&str, Value> {
-	alt((map(expression, Value::from), single))(i)
+	context(error::VALUE, alt((map(expression, Value::from), single)))(i)
 }
 
 /// Parse any `Value` excluding binary expressions
 pub fn single(i: &str) -> IResult<&str, Value> {
-	alt((
+	context(
+		error::VALUE,
 		alt((
-			map(tag_no_case("NONE"), |_| Value::None),
-			map(tag_no_case("NULL"), |_| Value::Null),
-			map(tag_no_case("true"), |_| Value::Bool(true)),
-			map(tag_no_case("false"), |_| Value::Bool(false)),
-			map(idiom::multi, Value::from),
+			alt((
+				map(tag_no_case("NONE"), |_| Value::None),
+				map(tag_no_case("NULL"), |_| Value::Null),
+				map(tag_no_case("true"), |_| Value::Bool(true)),
+				map(tag_no_case("false"), |_| Value::Bool(false)),
+				map(idiom::multi, Value::from),
+			)),
+			alt((
+				map(cast, Value::from),
+				map(function, Value::from),
+				map(subquery, Value::from),
+				map(constant, Value::from),
+				map(datetime, Value::from),
+				map(duration, Value::from),
+				map(geometry, Value::from),
+				map(future, Value::from),
+				map(unique, Value::from),
+				map(number, Value::from),
+				map(object, Value::from),
+				map(array, Value::from),
+				map(block, Value::from),
+				map(param, Value::from),
+				map(regex, Value::from),
+				map(model, Value::from),
+				map(edges, Value::from),
+				map(range, Value::from),
+				map(thing, Value::from),
+				map(strand, Value::from),
+				map(idiom::path, Value::from),
+			)),
 		)),
-		alt((
-			map(cast, Value::from),
-			map(function, Value::from),
-			map(subquery, Value::from),
-			map(constant, Value::from),
-			map(datetime, Value::from),
-			map(duration, Value::from),
-			map(geometry, Value::from),
-			map(future, Value::from),
-			map(unique, Value::from),
-			map(number, Value::from),
-			map(object, Value::from),
-			map(array, Value::from),
-			map(block, Value::from),
-			map(param, Value::from),
-			map(regex, Value::from),
-			map(model, Value::from),
-			map(edges, Value::from),
-			map(range, Value::from),
-			map(thing, Value::from),
-			map(strand, Value::from),
-			map(idiom::path, Value::from),
-		)),
-	))(i)
+	)(i)
 }
 
 pub fn select(i: &str) -> IResult<&str, Value> {
-	alt((
+	context(
+		error::VALUE,
 		alt((
-			map(expression, Value::from),
-			map(tag_no_case("NONE"), |_| Value::None),
-			map(tag_no_case("NULL"), |_| Value::Null),
-			map(tag_no_case("true"), |_| Value::Bool(true)),
-			map(tag_no_case("false"), |_| Value::Bool(false)),
-			map(idiom::multi, Value::from),
+			alt((
+				map(expression, Value::from),
+				map(tag_no_case("NONE"), |_| Value::None),
+				map(tag_no_case("NULL"), |_| Value::Null),
+				map(tag_no_case("true"), |_| Value::Bool(true)),
+				map(tag_no_case("false"), |_| Value::Bool(false)),
+				map(idiom::multi, Value::from),
+			)),
+			alt((
+				map(cast, Value::from),
+				map(function, Value::from),
+				map(subquery, Value::from),
+				map(constant, Value::from),
+				map(datetime, Value::from),
+				map(duration, Value::from),
+				map(geometry, Value::from),
+				map(future, Value::from),
+				map(unique, Value::from),
+				map(number, Value::from),
+				map(object, Value::from),
+				map(array, Value::from),
+				map(block, Value::from),
+				map(param, Value::from),
+				map(regex, Value::from),
+				map(model, Value::from),
+				map(edges, Value::from),
+				map(range, Value::from),
+				map(thing, Value::from),
+				map(table, Value::from),
+				map(strand, Value::from),
+			)),
 		)),
-		alt((
-			map(cast, Value::from),
-			map(function, Value::from),
-			map(subquery, Value::from),
-			map(constant, Value::from),
-			map(datetime, Value::from),
-			map(duration, Value::from),
-			map(geometry, Value::from),
-			map(future, Value::from),
-			map(unique, Value::from),
-			map(number, Value::from),
-			map(object, Value::from),
-			map(array, Value::from),
-			map(block, Value::from),
-			map(param, Value::from),
-			map(regex, Value::from),
-			map(model, Value::from),
-			map(edges, Value::from),
-			map(range, Value::from),
-			map(thing, Value::from),
-			map(table, Value::from),
-			map(strand, Value::from),
-		)),
-	))(i)
+	)(i)
 }
 
 /// Used as the starting part of a complex Idiom
@@ -2750,14 +2758,17 @@ pub fn json(i: &str) -> IResult<&str, Value> {
 	pub fn object(i: &str) -> IResult<&str, Object> {
 		let (i, _) = char('{')(i)?;
 		let (i, _) = mightbespace(i)?;
-		let (i, v) = separated_list0(commas, |i| {
-			let (i, k) = key(i)?;
-			let (i, _) = mightbespace(i)?;
-			let (i, _) = char(':')(i)?;
-			let (i, _) = mightbespace(i)?;
-			let (i, v) = json(i)?;
-			Ok((i, (String::from(k), v)))
-		})(i)?;
+		let (i, v) = context(
+			error::OBJECT,
+			separated_list0(commas, |i| {
+				let (i, k) = key(i)?;
+				let (i, _) = mightbespace(i)?;
+				let (i, _) = char(':')(i)?;
+				let (i, _) = mightbespace(i)?;
+				let (i, v) = json(i)?;
+				Ok((i, (String::from(k), v)))
+			}),
+		)(i)?;
 		let (i, _) = mightbespace(i)?;
 		let (i, _) = opt(char(','))(i)?;
 		let (i, _) = mightbespace(i)?;
@@ -2768,7 +2779,7 @@ pub fn json(i: &str) -> IResult<&str, Value> {
 	pub fn array(i: &str) -> IResult<&str, Array> {
 		let (i, _) = char('[')(i)?;
 		let (i, _) = mightbespace(i)?;
-		let (i, v) = separated_list0(commas, json)(i)?;
+		let (i, v) = context(error::ARRAY, separated_list0(commas, json))(i)?;
 		let (i, _) = mightbespace(i)?;
 		let (i, _) = opt(char(','))(i)?;
 		let (i, _) = mightbespace(i)?;

@@ -6,6 +6,8 @@ use crate::sql::error::IResult;
 use crate::sql::ident::{ident, Ident};
 use crate::sql::value::Value;
 use nom::character::complete::char;
+use nom::combinator::cut;
+use nom::error::context;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::ops::Deref;
@@ -93,7 +95,7 @@ impl fmt::Display for Param {
 
 pub fn param(i: &str) -> IResult<&str, Param> {
 	let (i, _) = char('$')(i)?;
-	let (i, v) = ident(i)?;
+	let (i, v) = cut(context(super::error::PARAM, ident))(i)?;
 	Ok((i, Param::from(v)))
 }
 

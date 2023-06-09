@@ -1,6 +1,5 @@
 use crate::sql::comment::mightbespace;
 use crate::sql::comment::shouldbespace;
-use crate::sql::error::Error::Parser;
 use crate::sql::error::IResult;
 use nom::branch::alt;
 use nom::bytes::complete::take_while;
@@ -8,7 +7,6 @@ use nom::bytes::complete::take_while_m_n;
 use nom::character::complete::char;
 use nom::character::is_alphanumeric;
 use nom::multi::many1;
-use nom::Err::Error;
 use std::ops::RangeBounds;
 
 pub fn colons(i: &str) -> IResult<&str, ()> {
@@ -108,7 +106,7 @@ pub fn take_u64(i: &str) -> IResult<&str, u64> {
 	let (i, v) = take_while(is_digit)(i)?;
 	match v.parse::<u64>() {
 		Ok(v) => Ok((i, v)),
-		_ => Err(Error(Parser(i))),
+		_ => nom::combinator::fail(i),
 	}
 }
 
@@ -116,7 +114,7 @@ pub fn take_u32_len(i: &str) -> IResult<&str, (u32, usize)> {
 	let (i, v) = take_while(is_digit)(i)?;
 	match v.parse::<u32>() {
 		Ok(n) => Ok((i, (n, v.len()))),
-		_ => Err(Error(Parser(i))),
+		_ => nom::combinator::fail(i),
 	}
 }
 
@@ -124,7 +122,7 @@ pub fn take_digits(i: &str, n: usize) -> IResult<&str, u32> {
 	let (i, v) = take_while_m_n(n, n, is_digit)(i)?;
 	match v.parse::<u32>() {
 		Ok(v) => Ok((i, v)),
-		_ => Err(Error(Parser(i))),
+		_ => nom::combinator::fail(i),
 	}
 }
 
@@ -132,6 +130,6 @@ pub fn take_digits_range(i: &str, n: usize, range: impl RangeBounds<u32>) -> IRe
 	let (i, v) = take_while_m_n(n, n, is_digit)(i)?;
 	match v.parse::<u32>() {
 		Ok(v) if range.contains(&v) => Ok((i, v)),
-		_ => Err(Error(Parser(i))),
+		_ => nom::combinator::fail(i),
 	}
 }

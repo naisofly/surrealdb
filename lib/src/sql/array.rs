@@ -11,6 +11,7 @@ use crate::sql::operation::Operation;
 use crate::sql::value::{value, Value};
 use nom::character::complete::char;
 use nom::combinator::opt;
+use nom::error::context;
 use nom::multi::separated_list0;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -356,7 +357,7 @@ impl Uniq<Array> for Array {
 
 pub fn array(i: &str) -> IResult<&str, Array> {
 	let (i, _) = openbracket(i)?;
-	let (i, v) = separated_list0(commas, value)(i)?;
+	let (i, v) = context(super::error::ARRAY, separated_list0(commas, value))(i)?;
 	let (i, _) = mightbespace(i)?;
 	let (i, _) = opt(char(','))(i)?;
 	let (i, _) = closebracket(i)?;

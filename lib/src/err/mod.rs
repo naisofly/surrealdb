@@ -76,11 +76,9 @@ pub enum Error {
 	QueryRemaining,
 
 	/// There was an error with the SQL query
-	#[error("Parse error on line {line} at character {char} when parsing '{sql}'")]
+	#[error("There was an error with the SQL query. {message}")]
 	InvalidQuery {
-		line: usize,
-		char: usize,
-		sql: String,
+		message: String,
 	},
 
 	/// There was an error with the provided JSON Patch

@@ -17,9 +17,11 @@ use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::bytes::complete::take_while1;
 use nom::character::complete::char;
+use nom::combinator::cut;
 use nom::combinator::recognize;
 use nom::multi::separated_list0;
 use nom::multi::separated_list1;
+use nom::sequence::delimited;
 use nom::sequence::preceded;
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
@@ -218,29 +220,47 @@ pub fn function(i: &str) -> IResult<&str, Function> {
 
 pub fn normal(i: &str) -> IResult<&str, Function> {
 	let (i, s) = function_names(i)?;
-	let (i, _) = openparentheses(i)?;
-	let (i, a) = separated_list0(commas, value)(i)?;
-	let (i, _) = closeparentheses(i)?;
+	let (i, a) = delimited(
+		openparentheses,
+		cut(|i| {
+			let (i, _) = mightbespace(i)?;
+			let (i, a) = separated_list0(commas, value)(i)?;
+			let (i, _) = mightbespace(i)?;
+			Ok((i, a))
+		}),
+		closeparentheses,
+	)(i)?;
 	Ok((i, Function::Normal(s.to_string(), a)))
 }
 
 pub fn custom(i: &str) -> IResult<&str, Function> {
 	let (i, _) = tag("fn::")(i)?;
 	let (i, s) = recognize(separated_list1(tag("::"), take_while1(val_char)))(i)?;
-	let (i, _) = char('(')(i)?;
-	let (i, _) = mightbespace(i)?;
-	let (i, a) = separated_list0(commas, value)(i)?;
-	let (i, _) = mightbespace(i)?;
-	let (i, _) = char(')')(i)?;
+	let (i, a) = delimited(
+		char('('),
+		cut(|i| {
+			let (i, _) = mightbespace(i)?;
+			let (i, a) = separated_list0(commas, value)(i)?;
+			let (i, _) = mightbespace(i)?;
+			Ok((i, a))
+		}),
+		char(')'),
+	)(i)?;
 	Ok((i, Function::Custom(s.to_string(), a)))
 }
 
 fn script(i: &str) -> IResult<&str, Function> {
 	let (i, _) = tag("function")(i)?;
-	let (i, _) = openparentheses(i)?;
-	let (i, _) = mightbespace(i)?;
-	let (i, a) = separated_list0(commas, value)(i)?;
-	let (i, _) = closeparentheses(i)?;
+	let (i, a) = delimited(
+		openparentheses,
+		cut(|i| {
+			let (i, _) = mightbespace(i)?;
+			let (i, a) = separated_list0(commas, value)(i)?;
+			let (i, _) = mightbespace(i)?;
+			Ok((i, a))
+		}),
+		closeparentheses,
+	)(i)?;
 	let (i, _) = mightbespace(i)?;
 	let (i, _) = char('{')(i)?;
 	let (i, v) = func(i)?;

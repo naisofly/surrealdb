@@ -31,6 +31,7 @@ use crate::sql::value::Value;
 use derive::Store;
 use nom::branch::alt;
 use nom::combinator::map;
+use nom::error::context;
 use nom::multi::many0;
 use nom::multi::separated_list1;
 use nom::sequence::delimited;
@@ -189,31 +190,34 @@ impl Display for Statement {
 }
 
 pub fn statement(i: &str) -> IResult<&str, Statement> {
-	delimited(
-		mightbespace,
-		alt((
-			map(begin, Statement::Begin),
-			map(cancel, Statement::Cancel),
-			map(commit, Statement::Commit),
-			map(create, Statement::Create),
-			map(define, Statement::Define),
-			map(delete, Statement::Delete),
-			map(ifelse, Statement::Ifelse),
-			map(info, Statement::Info),
-			map(insert, Statement::Insert),
-			map(kill, Statement::Kill),
-			map(live, Statement::Live),
-			map(option, Statement::Option),
-			map(output, Statement::Output),
-			map(relate, Statement::Relate),
-			map(remove, Statement::Remove),
-			map(select, Statement::Select),
-			map(set, Statement::Set),
-			map(sleep, Statement::Sleep),
-			map(update, Statement::Update),
-			map(yuse, Statement::Use),
-		)),
-		mightbespace,
+	context(
+		super::error::STATEMENT,
+		delimited(
+			mightbespace,
+			alt((
+				map(begin, Statement::Begin),
+				map(cancel, Statement::Cancel),
+				map(commit, Statement::Commit),
+				map(create, Statement::Create),
+				map(define, Statement::Define),
+				map(delete, Statement::Delete),
+				map(ifelse, Statement::Ifelse),
+				map(info, Statement::Info),
+				map(insert, Statement::Insert),
+				map(kill, Statement::Kill),
+				map(live, Statement::Live),
+				map(option, Statement::Option),
+				map(output, Statement::Output),
+				map(relate, Statement::Relate),
+				map(remove, Statement::Remove),
+				map(select, Statement::Select),
+				map(set, Statement::Set),
+				map(sleep, Statement::Sleep),
+				map(update, Statement::Update),
+				map(yuse, Statement::Use),
+			)),
+			mightbespace,
+		),
 	)(i)
 }
 

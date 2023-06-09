@@ -84,6 +84,8 @@ impl Display for RemoveStatement {
 }
 
 pub fn remove(i: &str) -> IResult<&str, RemoveStatement> {
+	let (i, _) = tag_no_case("REMOVE")(i)?;
+	let (i, _) = shouldbespace(i)?;
 	alt((
 		map(namespace, RemoveStatement::Namespace),
 		map(database, RemoveStatement::Database),
@@ -145,8 +147,6 @@ impl Display for RemoveNamespaceStatement {
 }
 
 fn namespace(i: &str) -> IResult<&str, RemoveNamespaceStatement> {
-	let (i, _) = tag_no_case("REMOVE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = alt((tag_no_case("NS"), tag_no_case("NAMESPACE")))(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, name) = ident(i)?;
@@ -203,8 +203,6 @@ impl Display for RemoveDatabaseStatement {
 }
 
 fn database(i: &str) -> IResult<&str, RemoveDatabaseStatement> {
-	let (i, _) = tag_no_case("REMOVE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = alt((tag_no_case("DB"), tag_no_case("DATABASE")))(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, name) = ident(i)?;
@@ -258,8 +256,6 @@ impl fmt::Display for RemoveFunctionStatement {
 }
 
 fn function(i: &str) -> IResult<&str, RemoveFunctionStatement> {
-	let (i, _) = tag_no_case("REMOVE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("FUNCTION")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag("fn::")(i)?;
@@ -320,8 +316,6 @@ impl Display for RemoveAnalyzerStatement {
 }
 
 fn analyzer(i: &str) -> IResult<&str, RemoveAnalyzerStatement> {
-	let (i, _) = tag_no_case("REMOVE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("ANALYZER")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, name) = ident(i)?;
@@ -396,8 +390,6 @@ impl Display for RemoveLoginStatement {
 }
 
 fn login(i: &str) -> IResult<&str, RemoveLoginStatement> {
-	let (i, _) = tag_no_case("REMOVE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("LOGIN")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, name) = ident(i)?;
@@ -492,8 +484,6 @@ impl Display for RemoveTokenStatement {
 }
 
 fn token(i: &str) -> IResult<&str, RemoveTokenStatement> {
-	let (i, _) = tag_no_case("REMOVE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("TOKEN")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, name) = ident(i)?;
@@ -555,8 +545,6 @@ impl Display for RemoveScopeStatement {
 }
 
 fn scope(i: &str) -> IResult<&str, RemoveScopeStatement> {
-	let (i, _) = tag_no_case("REMOVE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("SCOPE")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, name) = ident(i)?;
@@ -610,8 +598,6 @@ impl Display for RemoveParamStatement {
 }
 
 fn param(i: &str) -> IResult<&str, RemoveParamStatement> {
-	let (i, _) = tag_no_case("REMOVE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("PARAM")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, _) = char('$')(i)?;
@@ -669,8 +655,6 @@ impl Display for RemoveTableStatement {
 }
 
 fn table(i: &str) -> IResult<&str, RemoveTableStatement> {
-	let (i, _) = tag_no_case("REMOVE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("TABLE")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, name) = ident(i)?;
@@ -728,8 +712,6 @@ impl Display for RemoveEventStatement {
 }
 
 fn event(i: &str) -> IResult<&str, RemoveEventStatement> {
-	let (i, _) = tag_no_case("REMOVE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("EVENT")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, name) = ident(i)?;
@@ -794,8 +776,6 @@ impl Display for RemoveFieldStatement {
 }
 
 fn field(i: &str) -> IResult<&str, RemoveFieldStatement> {
-	let (i, _) = tag_no_case("REMOVE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("FIELD")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, name) = idiom::local(i)?;
@@ -863,8 +843,6 @@ impl Display for RemoveIndexStatement {
 }
 
 fn index(i: &str) -> IResult<&str, RemoveIndexStatement> {
-	let (i, _) = tag_no_case("REMOVE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("INDEX")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, name) = ident(i)?;

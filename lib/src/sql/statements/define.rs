@@ -106,6 +106,8 @@ impl Display for DefineStatement {
 }
 
 pub fn define(i: &str) -> IResult<&str, DefineStatement> {
+	let (i, _) = tag_no_case("DEFINE")(i)?;
+	let (i, _) = shouldbespace(i)?;
 	alt((
 		map(namespace, DefineStatement::Namespace),
 		map(database, DefineStatement::Database),
@@ -160,8 +162,6 @@ impl Display for DefineNamespaceStatement {
 }
 
 fn namespace(i: &str) -> IResult<&str, DefineNamespaceStatement> {
-	let (i, _) = tag_no_case("DEFINE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = alt((tag_no_case("NS"), tag_no_case("NAMESPACE")))(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, name) = ident(i)?;
@@ -216,8 +216,6 @@ impl Display for DefineDatabaseStatement {
 }
 
 fn database(i: &str) -> IResult<&str, DefineDatabaseStatement> {
-	let (i, _) = tag_no_case("DEFINE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = alt((tag_no_case("DB"), tag_no_case("DATABASE")))(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, name) = ident(i)?;
@@ -283,8 +281,6 @@ impl fmt::Display for DefineFunctionStatement {
 }
 
 fn function(i: &str) -> IResult<&str, DefineFunctionStatement> {
-	let (i, _) = tag_no_case("DEFINE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("FUNCTION")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag("fn::")(i)?;
@@ -370,8 +366,6 @@ impl Display for DefineAnalyzerStatement {
 }
 
 fn analyzer(i: &str) -> IResult<&str, DefineAnalyzerStatement> {
-	let (i, _) = tag_no_case("DEFINE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("ANALYZER")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, name) = ident(i)?;
@@ -457,8 +451,6 @@ impl Display for DefineLoginStatement {
 }
 
 fn login(i: &str) -> IResult<&str, DefineLoginStatement> {
-	let (i, _) = tag_no_case("DEFINE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("LOGIN")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, name) = ident(i)?;
@@ -607,8 +599,6 @@ impl Display for DefineTokenStatement {
 }
 
 fn token(i: &str) -> IResult<&str, DefineTokenStatement> {
-	let (i, _) = tag_no_case("DEFINE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("TOKEN")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, name) = ident(i)?;
@@ -693,8 +683,6 @@ impl Display for DefineScopeStatement {
 }
 
 fn scope(i: &str) -> IResult<&str, DefineScopeStatement> {
-	let (i, _) = tag_no_case("DEFINE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("SCOPE")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, name) = ident(i)?;
@@ -804,8 +792,6 @@ impl Display for DefineParamStatement {
 }
 
 fn param(i: &str) -> IResult<&str, DefineParamStatement> {
-	let (i, _) = tag_no_case("DEFINE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("PARAM")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, _) = char('$')(i)?;
@@ -925,8 +911,6 @@ impl Display for DefineTableStatement {
 }
 
 fn table(i: &str) -> IResult<&str, DefineTableStatement> {
-	let (i, _) = tag_no_case("DEFINE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("TABLE")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, name) = ident(i)?;
@@ -1063,8 +1047,6 @@ impl Display for DefineEventStatement {
 }
 
 fn event(i: &str) -> IResult<&str, DefineEventStatement> {
-	let (i, _) = tag_no_case("DEFINE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("EVENT")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, name) = ident(i)?;
@@ -1163,8 +1145,6 @@ impl Display for DefineFieldStatement {
 }
 
 fn field(i: &str) -> IResult<&str, DefineFieldStatement> {
-	let (i, _) = tag_no_case("DEFINE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("FIELD")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, name) = idiom::local(i)?;
@@ -1333,8 +1313,6 @@ impl Display for DefineIndexStatement {
 }
 
 fn index(i: &str) -> IResult<&str, DefineIndexStatement> {
-	let (i, _) = tag_no_case("DEFINE")(i)?;
-	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("INDEX")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, name) = ident(i)?;
